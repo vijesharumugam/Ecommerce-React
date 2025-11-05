@@ -1,6 +1,6 @@
-import { Routes, Route } from "react-router"
-import {HomePage} from "./pages/HomePage"
-
+import { Routes, Route } from "react-router";
+import {HomePage} from "./pages/HomePage"; 
+import { CheckoutPage } from "./pages/Checkoutpage";
 function App() {
   
 
@@ -8,7 +8,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />}>
       </Route>
-      <Route path="Checkout" element={<div>Test Checkout page</div>}>
+      <Route path="Checkout" element={<CheckoutPage />}   >
 
       </Route>
     </Routes>
