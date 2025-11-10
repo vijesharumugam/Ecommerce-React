@@ -6,6 +6,8 @@ import dayjs from 'dayjs';
 
 export function CheckoutPage({ cart }) {
     const [deliveryOptions, setDeliveryOptions] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState({});
+
     useEffect(() => {
         axios.get("http://localhost:3000/api/delivery-options?expand=estimatedDeliveryTime")
             .then((response) => {
@@ -13,6 +15,10 @@ export function CheckoutPage({ cart }) {
             });
     }, []);
 
+    useEffect(() => {
+        const initial = Object.fromEntries(cart.map((ci) => [ci.productId, ci.deliveryOptionId]));
+        setSelectedOptions(initial);
+    }, [cart]);
 
     return (
         <>
@@ -43,27 +49,31 @@ export function CheckoutPage({ cart }) {
 
                 <div className="checkout-grid">
                     <div className="order-summary">
-                        {cart.map((cartItems) => {
+                        {deliveryOptions.length > 0 && cart.map((cartItem) => {
+                            const selectedId = selectedOptions[cartItem.productId] ?? cartItem.deliveryOptionId;
+                            const selectedDeliveryOption = deliveryOptions.find((deliveryOption) => {
+                                return deliveryOption.id === selectedId;
+                            });
                             return(
-                                <div key = {cartItems.productId} className="cart-item-container">
+                                <div key = {cartItem.productId} className="cart-item-container">
                                     <div className="delivery-date">
-                                        Delivery date: Tuesday, June 21
+                                        Delivery date: {selectedDeliveryOption ? dayjs(selectedDeliveryOption.estimatedDeliveryTimeMs).format('dddd, MMMM D') : 'Select a delivery option'}
                                     </div>
 
                                     <div className="cart-item-details-grid">
                                         <img className="product-image"
-                                            src={cartItems.product.image} />
+                                            src={cartItem.product.image} />
 
                                         <div className="cart-item-details">
                                             <div className="product-name">
-                                                {cartItems.product.name}
+                                                {cartItem.product.name}
                                             </div>
                                             <div className="product-price">
-                                                {cartItems.product.priceCents}
+                                                {cartItem.product.priceCents}
                                             </div>
                                             <div className="product-quantity">
                                                 <span>
-                                                    Quantity: <span className="quantity-label">{cartItems.quantity}</span>
+                                                    Quantity: <span className="quantity-label">{cartItem.quantity}</span>
                                                 </span>
                                                 <span className="update-quantity-link link-primary">
                                                     Update
@@ -87,7 +97,9 @@ export function CheckoutPage({ cart }) {
                                                     <div key = {deliveryOption.id} className="delivery-option">
                                                 <input type="radio"
                                                     className="delivery-option-input"
-                                                    name={`delivery-option-${cartItems.productId}`} />
+                                                    name={`delivery-option-${cartItem.productId}`}
+                                                    checked={deliveryOption.id === (selectedOptions[cartItem.productId] ?? cartItem.deliveryOptionId)}
+                                                    onChange={() => setSelectedOptions(prev => ({ ...prev, [cartItem.productId]: deliveryOption.id }))} />
                                                 <div>
                                                     <div className="delivery-option-date">
                                                         {dayjs(deliveryOption.estimatedDeliveryTimeMs).format('dddd, MMMM D')}
